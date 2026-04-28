@@ -1,30 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="web3" default="build" basedir=".">
-    <property name="src.dir" location="src/main/java" />
-    <property name="build.dir" location="build" />
-    <property name="classes.dir" location="${build.dir}/classes" />
-    <property name="dist.dir" location="dist" />
-    <property name="lib.dir" location="lib" />
+
+    <property file="build.properties"/>
 
     <target name="clean">
-        <delete dir="${build.dir}" />
-        <delete dir="${dist.dir}" />
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="checksums-and-manifest" depends="compile">
+        <mkdir dir="${build.dir}/META-INF"/>
+        
+        <checksum file="${classes.dir}/hibernate.cfg.xml" 
+                  forceOverwrite="yes" fileext=".md5"/>
+        <loadfile property="md5.config" srcFile="${classes.dir}/hibernate.cfg.xml.md5">
+            <filterchain>
+                <striplinebreaks/>
+            </filterchain>
+        </loadfile>
+
+        <checksum file="${classes.dir}/hibernate.cfg.xml" 
+                  algorithm="SHA-1" forceOverwrite="yes" fileext=".sha1"/>
+        <loadfile property="sha1.config" srcFile="${classes.dir}/hibernate.cfg.xml.sha1">
+            <filterchain>
+                <striplinebreaks/>
+            </filterchain>
+        </loadfile>
+
+        <echo file="${build.dir}/MANIFEST.MF.temp" 
+              message="Manifest-Version: 1.0${line.separator}Implementation-Version: ${app.version}${line.separator}Main-Class: none${line.separator}${line.separator}Name: Configuration-Info${line.separator}Config-MD5: ${md5.config}${line.separator}Config-SHA1: ${sha1.config}${line.separator}${line.separator}"/>
+        
+        <copy file="${build.dir}/MANIFEST.MF.temp" tofile="${build.dir}/META-INF/MANIFEST.MF"/>
     </target>
 
     <path id="compile.classpath">
-        <fileset dir="${lib.dir}">
-            <include name="*.jar" />
+        <fileset dir="${lib.compile.dir}">
+            <include name="*.jar"/>
         </fileset>
     </path>
 
-    <target name="compile">
-        <mkdir dir="${classes.dir}" />
+    <target name="compile" depends="clean">
+        <mkdir dir="${classes.dir}"/>
         <javac srcdir="${src.dir}"
-            destdir="${classes.dir}"
-            classpathref="compile.classpath"
-            includeantruntime="false"
-            encoding="UTF-8"
-        />
+               destdir="${classes.dir}"
+               classpathref="compile.classpath"
+               includeantruntime="false"
+               encoding="UTF-8"/>
+        <copy todir="${classes.dir}">
+            <fileset dir="${resources.dir}"/>
+        </copy>
+    </target>
+
+    <target name="doc" depends="checksums-and-manifest">
+        <mkdir dir="${docs.javadoc.dir}"/>
+        <javadoc sourcepath="${src.dir}" destdir="${docs.javadoc.dir}"
+                 encoding="UTF-8" charset="UTF-8" docencoding="UTF-8"
+                 access="public" windowtitle="Web3 API">
+            <classpath refid="compile.classpath"/>
+        </javadoc>
+    </target>
+
+    <target name="build" depends="doc">
+        <mkdir dir="${dist.dir}"/>
+        <war destfile="${dist.dir}/web3.war"
+             webxml="${web.dir}/WEB-INF/web.xml"
+             manifest="${build.dir}/META-INF/MANIFEST.MF">
+            <classes dir="${classes.dir}"/>
+            <lib dir="${lib.package.dir}"/>
+            <fileset dir="${web.dir}">
+                <exclude name="WEB-INF/**"/>
+            </fileset>
+            <webinf dir="${web.dir}/WEB-INF" includes="**/*" excludes="web.xml"/>
+            <zipfileset dir="${docs.javadoc.dir}" prefix="docs/javadoc"/>
+        </war>
     </target>
 
 </project>
