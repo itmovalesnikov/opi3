@@ -224,3 +224,6 @@ hs_err_pid*
 *.dylib
 .DS_Store
 Thumbs.db
+
+# My
+/lib/
