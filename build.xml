@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="web3" default="build" basedir=".">
+    <property name="src.dir" location="src/main/java" />
+    <property name="build.dir" location="build" />
+    <property name="classes.dir" location="${build.dir}/classes" />
+    <property name="dist.dir" location="dist" />
+    <property name="lib.dir" location="lib" />
+
+    <target name="clean">
+        <delete dir="${build.dir}" />
+        <delete dir="${dist.dir}" />
+    </target>
+
+    <path id="compile.classpath">
+        <fileset dir="${lib.dir}">
+            <include name="*.jar" />
+        </fileset>
+    </path>
+
+    <target name="compile">
+        <mkdir dir="${classes.dir}" />
+        <javac srcdir="${src.dir}"
+            destdir="${classes.dir}"
+            classpathref="compile.classpath"
+            includeantruntime="false"
+            encoding="UTF-8"
+        />
+    </target>
+
+</project>
