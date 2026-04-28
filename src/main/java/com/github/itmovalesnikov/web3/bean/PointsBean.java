@@ -17,15 +17,31 @@ import com.github.itmovalesnikov.web3.utils.SessionUtils;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Named;
 
+/**
+ * A managed bean that handles point validation and storage for the web application.
+ * Manages coordinate values (x, y) and radius (r) for points, validates them,
+ * and stores both temporary points and persistent points in the database.
+ */
 @Named("pointsBean")
 @SessionScoped
 public class PointsBean implements Serializable {
 
+    /** X coordinate of the point */
     private BigFraction x = BigFraction.ZERO;
+    
+    /** Y coordinate of the point */
     private BigFraction y = BigFraction.ZERO;
+    
+    /** Radius value for hit detection */
     private BigFraction r = BigFraction.ONE;
+    
+    /** List of points for current session */
     private final List<Point> points = new ArrayList<>();
 
+    /**
+     * Submits the current coordinates to validate hit detection and store in database.
+     * Creates both a temporary Point object and a persistent BPoint object in the database.
+     */
     public void submit() {
         Point point = new Point(x, y, r);
         points.add(point);
@@ -38,30 +54,66 @@ public class PointsBean implements Serializable {
         }
     }
 
+    /**
+     * Gets the X coordinate as a decimal string.
+     *
+     * @return X coordinate as a decimal string representation
+     */
     public String getX() {
         return BigFractionUtils.toDecimalString(x);
     }
 
+    /**
+     * Sets the X coordinate from a string representation.
+     *
+     * @param xStr String representation of the X coordinate
+     */
     public void setX(String xStr) {
         this.x = BigFractionUtils.fromDecimalString(xStr);
     }
 
+    /**
+     * Gets the Y coordinate as a decimal string.
+     *
+     * @return Y coordinate as a decimal string representation
+     */
     public String getY() {
         return BigFractionUtils.toDecimalString(y);
     }
 
+    /**
+     * Sets the Y coordinate from a string representation.
+     *
+     * @param yStr String representation of the Y coordinate
+     */
     public void setY(String yStr) {
         this.y = BigFractionUtils.fromDecimalString(yStr);
     }
 
+    /**
+     * Gets the radius as a decimal string.
+     *
+     * @return Radius as a decimal string representation
+     */
     public String getR() {
         return BigFractionUtils.toDecimalString(r);
     }
 
+    /**
+     * Sets the radius from a string representation.
+     *
+     * @param rStr String representation of the radius
+     */
     public void setR(String rStr) {
         this.r = BigFractionUtils.fromDecimalString(rStr);
     }
 
+    /**
+     * Retrieves all points stored in the database for the current session.
+     * This method also prints the X, Y coordinates and session ID of each point to the console.
+     *
+     * @return List of BPoint objects associated with the current session
+     */
     public List<BPoint> getPoints() {
         List<BPoint> points = new ArrayList<>();
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

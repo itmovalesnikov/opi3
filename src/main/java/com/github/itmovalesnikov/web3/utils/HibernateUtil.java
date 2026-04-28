@@ -7,16 +7,23 @@ import org.hibernate.service.ServiceRegistry;
 
 import com.github.itmovalesnikov.web3.model.BPoint;
 
+/**
+ * Utility class for managing Hibernate SessionFactory.
+ * Initializes the SessionFactory with database connection properties
+ * and registers annotated entities.
+ */
 public class HibernateUtil {
+    /** SessionFactory instance for creating database sessions */
     private static final SessionFactory sessionFactory;
 
+    /** Static initializer block to create the SessionFactory */
     static {
         try {
             String dbUsername = System.getenv("DB_USERNAME");
             String dbPassword = System.getenv("DB_PASSWORD");
 
             if (dbUsername == null || dbPassword == null) {
-                throw new Exception("DB_USERNAME or DB_PASSWORD environment variables are not set");
+                throw new RuntimeException("DB_USERNAME or DB_PASSWORD environment variables are not set");
             }
             
             Configuration configuration = new Configuration();
@@ -37,6 +44,11 @@ public class HibernateUtil {
         }
     }
 
+    /**
+     * Returns the singleton SessionFactory instance.
+     *
+     * @return SessionFactory instance for creating database sessions
+     */
     public static SessionFactory getSessionFactory() {
         return sessionFactory;
     }

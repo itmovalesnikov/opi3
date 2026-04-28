@@ -9,9 +9,23 @@ import jakarta.faces.application.FacesMessage;
 
 import java.math.BigDecimal;
 
+/**
+ * JSF validator for Y coordinate values.
+ * Ensures that the Y coordinate value is within the range [-5, 5].
+ */
 @FacesValidator("yValueValidator")
 public class YValueValidator implements Validator<String> {
 
+    /**
+     * Validates that the provided Y coordinate value is within the acceptable range [-5, 5].
+     * The method checks if the value is not empty and within the range [-5, 5], 
+     * catching any parsing errors, and wraps all errors in a ValidatorException.
+     *
+     * @param context The FacesContext of the current request
+     * @param component The UI component being validated
+     * @param value The string value to validate
+     * @throws ValidatorException if the value is null, blank, outside the range [-5, 5], or not a valid number
+     */
     @Override
     public void validate(FacesContext context, UIComponent component, String value) throws ValidatorException {
         try {
