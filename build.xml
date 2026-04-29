@@ -54,20 +54,17 @@
             <attribute name="Build-Java-Version" value="${ant.java.version}" />
             <attribute name="X-Project-Encoding" value="${project.encoding}" />
         </manifest>
-        <jar
-            jarfile="${jar.path}"
-            basedir="${classes.dir}"
+
+        <war destfile="${dist.dir}/web3.war"
+            webxml="${web.dir}/WEB-INF/web.xml"
             manifest="${manifest.path}">
-            <include name="**/*.class" />
-            <include name="**/*.properties" />
-            <include name="**/*.xml" />
-            <include name="**/*.fxml" />
-            <exclude name="**/test/**" />
-        </jar>
-        <exec executable="ls" outputproperty="jar.size.output">
-            <arg value="-lh" />
-            <arg value="${jar.path}" />
-        </exec>
+            <classes dir="${classes.dir}" />
+            <lib dir="${lib.package.dir}" />
+            <fileset dir="${web.dir}">
+                <exclude name="WEB-INF/**" />
+            </fileset>
+            <webinf dir="${web.dir}/WEB-INF" includes="**/*" excludes="web.xml" />
+        </war>
     </target>
 
     <target name="clean">
@@ -111,47 +108,36 @@
             windowtitle="${project.name} - API Documentation"
             doctitle="${project.name} v${project.version}"
             failonerror="false"
-            encoding="${javac.encoding}"
             classpathref="compile.classpath">
             <packageset dir="${src.dir}" defaultexcludes="yes">
                 <include name="com/github/itmovalesnikov/web3/**" />
             </packageset>
         </javadoc>
+
         <checksum
-            file="${jar.path}"
-            property="jar.md5"
+            file="${war.path}"
+            property="war.md5"
             algorithm="MD5" />
         <checksum
-            file="${jar.path}"
-            property="jar.sha1"
+            file="${war.path}"
+            property="war.sha1"
             algorithm="SHA1" />
-        <manifest file="${manifest.path}">
-            <attribute name="Manifest-Version" value="1.0" />
-            <attribute name="Implementation-Title" value="${project.name}" />
-            <attribute name="Implementation-Version" value="${project.version}" />
-            <attribute name="Implementation-Vendor" value="${project.author}" />
-            <attribute name="Created-By" value="Apache Ant" />
-            <attribute name="Build-Date" value="${build.time}" />
-            <attribute name="Build-Java-Version" value="${ant.java.version}" />
-            <attribute name="X-Project-Encoding" value="${project.encoding}" />
-            <attribute name="X-SHA1-Checksum" value="${jar.sha1}" />
-            <attribute name="X-MD5-Checksum" value="${jar.md5}" />
-        </manifest>
-        <jar
-            jarfile="${jar.path}"
-            basedir="${classes.dir}"
-            manifest="${manifest.path}"
-            duplicate="preserve">
-            <include name="**/*.class" />
-            <include name="**/*.properties" />
-            <include name="**/*.xml" />
-        </jar>
-        <jar
-            jarfile="${jar.path}"
-            basedir="${docs.javadoc.dir}"
-            prefix="docs/javadoc"
-            update="true">
-        </jar>
+
+        <war destfile="${war.path}" update="true">
+            <manifest>
+                <attribute name="Manifest-Version" value="1.0" />
+                <attribute name="Implementation-Title" value="${project.name}" />
+                <attribute name="Implementation-Version" value="${project.version}" />
+                <attribute name="Implementation-Vendor" value="${project.author}" />
+                <attribute name="Created-By" value="Apache Ant" />
+                <attribute name="Build-Date" value="${build.time}" />
+                <attribute name="Build-Java-Version" value="${ant.java.version}" />
+                <attribute name="X-Project-Encoding" value="${project.encoding}" />
+                <attribute name="X-SHA1-Checksum" value="${war.sha1}" />
+                <attribute name="X-MD5-Checksum" value="${war.md5}" />
+            </manifest>
+            <zipfileset dir="${docs.javadoc.dir}" prefix="docs/javadoc" />
+        </war>
     </target>
 
     <target name="team" depends="build">
