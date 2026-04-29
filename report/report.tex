@@ -1,0 +1,213 @@
+\documentclass[12pt]{article}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian,english]{babel}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{makecell}
+\usepackage{tabularx}
+\usepackage{tikz}
+\usepackage{xltabular}
+\usepackage[table]{xcolor}
+\usepackage{listings}
+
+\geometry{
+    a4paper,
+    left=1.5cm,
+    right=1.5cm,
+    top=1.5cm,
+    bottom=2.5cm
+}
+
+\hypersetup{hidelinks}
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{0.35\baselineskip}
+\setlength{\emergencystretch}{1.5em}
+\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.12}
+\setcellgapes{2pt}
+\makegapedcells
+\keepXColumns
+
+\definecolor{commitred}{RGB}{236, 48, 48}
+\definecolor{commitblue}{RGB}{52, 83, 255}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\cmdcell}[1]{\parbox[t]{\linewidth}{\ttfamily\small\raggedright\strut #1\strut}}
+
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{commentcolor}{RGB}{0,128,0}
+\definecolor{keywordcolor}{RGB}{0,0,128}
+\definecolor{stringcolor}{RGB}{163,21,21}
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{black!30},
+    keywordstyle=\color{keywordcolor},
+    commentstyle=\color{commentcolor},
+    stringstyle=\color{stringcolor},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    captionpos=b,
+    showstringspaces=false,
+    tabsize=2
+}
+
+\begin{document}
+
+\input{title.tex}
+\clearpage
+\tableofcontents
+\newpage
+
+\section{Цель работы}
+
+Изучить и реализовать сценарий сборки проекта с помощью Apache Ant, обеспечивающий компиляцию, тестирование, генерацию документации и упаковку Java-проекта из лабораторной работы №3 по дисциплине «Веб-программирование».
+
+\section{Техническое задание}
+
+Разработать Ant-сценарий, удовлетворяющий следующим требованиям:
+
+\begin{enumerate}[leftmargin=*, label=\arabic*)]
+    \item Все переменные и константы должны быть вынесены в отдельный файл параметров.
+    \item \texttt{MANIFEST.MF} должен содержать информацию о версии и запускаемом классе.
+    \item Цель \texttt{compile} должна осуществлять компиляцию исходных кодов.
+    \item Цель \texttt{build} должна вызывать \texttt{compile} и упаковывать приложение в JAR-архив.
+    \item Цель \texttt{clean} должна удалять скомпилированные классы и временные файлы.
+    \item Цель \texttt{test} должна запускать JUnit-тесты проекта после сборки.
+    \item Цель \texttt{doc} должна добавлять MD5 и SHA-1 в \texttt{MANIFEST.MF}, генерировать Javadoc и добавлять его в архив.
+    \item Цель \texttt{team} должна получать предыдущие git-ревизии, собирать их и упаковывать в ZIP через \texttt{build}.
+\end{enumerate}
+
+\section{Исходные данные}
+
+Проект расположен в каталоге \texttt{opi3}. Исходная структура проекта включает:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{src/main/java} -- исходные Java-классы;
+    \item \texttt{src/test/java} -- тестовые классы;
+    \item \texttt{src/main/resources} -- ресурсы и конфигурационные файлы;
+    \item \texttt{build.properties} -- файл параметров;
+    \item \texttt{build.xml} -- Ant-сценарий.
+\end{itemize}
+
+\section{Ход работы}
+
+\subsection{Подготовка параметров}
+
+Создан файл \texttt{build.properties}, содержащий все настройки проекта. Это позволяет изменять пути, версии и параметры компиляции без изменения основного сценария.
+
+\subsection{Реализация цели compile}
+
+Цель \texttt{compile} реализована отдельным блоком Ant-сценария. Она выполняет:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item создание каталогов сборки;
+    \item компиляцию файлов из \texttt{src/main/java} в \texttt{build/classes};
+    \item копирование ресурсов из \texttt{src/main/resources} в каталог классов.
+\end{itemize}
+
+\subsection{Реализация цели build}
+
+Цель \texttt{build} зависит от \texttt{compile} и выполняет:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item генерацию файла \texttt{MANIFEST.MF};
+    \item упаковку классов и ресурсов в JAR-архив \texttt{dist/web3.jar};
+    \item включение информации о версии, основном классе и дате сборки.
+\end{itemize}
+
+\subsection{Реализация цели clean}
+
+Цель \texttt{clean} удаляет каталоги \texttt{build/} и \texttt{dist/}, а также временные файлы типа \texttt{*.bak} и \texttt{*~}. Это возвращает проект в исходное состояние.
+
+\subsection{Реализация цели test}
+
+Цель \texttt{test} запускается после \texttt{build} и выполняет следующие действия:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item компиляцию тестовых классов в \texttt{build/test-classes};
+    \item копирование тестовых ресурсов;
+    \item запуск JUnit-тестов;
+    \item сохранение результатов в \texttt{build/reports}.
+\end{itemize}
+
+\subsection{Реализация цели doc}
+
+Цель \texttt{doc} реализует:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item генерацию документации Javadoc по всем классам;
+    \item расчёт MD5 и SHA-1 для итогового JAR;
+    \item обновление \texttt{MANIFEST.MF} с контрольными суммами;
+    \item пересоздание архива с учетом Javadoc.
+\end{itemize}
+
+\subsection{Реализация цели team}
+
+Цель \texttt{team} выполняет:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item проверку наличия git-репозитория;
+    \item получение двух предыдущих ревизий;
+    \item сборку каждой ревизии через цель \texttt{build};
+    \item упаковку полученных JAR-файлов в \texttt{dist/team-builds.zip}.
+\end{itemize}
+
+\section{Результаты}
+
+В результате работы были созданы:
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{build.properties} -- конфигурация параметров Ant;
+    \item \texttt{build.xml} -- сценарий Ant с целями \texttt{compile}, \texttt{build}, \texttt{clean}, \texttt{test}, \texttt{doc}, \texttt{team};
+    \item \texttt{report/title.tex} -- титульная страница отчёта;
+    \item \texttt{report/report.tex} -- отчёт по заданной структуре.
+\end{itemize}
+
+\subsection{Список целей}
+
+\begin{xltabular}{\textwidth}{|L{0.25\textwidth}|Y|}
+\hline
+\rowcolor{white}
+\textbf{Цель} & \textbf{Назначение} \\
+\hline
+compile & компиляция исходных кодов проекта \\
+\hline
+build & создание JAR и вызов \texttt{compile} \\
+\hline
+clean & удаление артефактов сборки \\
+\hline
+test & запуск JUnit-тестов после сборки \\
+\hline
+doc & генерация документации и запись контрольных сумм \\
+\hline
+team & сборка двух предыдущих ревизий и архивирование \\
+\hline
+\end{xltabular}
+
+\section{Приложение}
+
+\subsection{Листинг файла build.properties}
+
+\lstinputlisting[caption={Конфигурация параметров Ant}]{../build.properties}
+
+\subsection{Листинг файла build.xml}
+
+\lstinputlisting[caption={Ант-сценарий сборки}]{../build.xml}
+
+\section{Вывод}
+
+Разработанный Ant-сценарий полностью соответствует техническому заданию. Он обеспечивает разделение конфигурации и логики, воспроизводимую сборку, автоматический запуск тестов, генерацию документации и контрольных сумм, а также сборку предыдущих версий через git.
+
+Файл \texttt{MANIFEST.MF} содержит информацию о версии и запускаемом классе, а также добавленные контрольные суммы MD5 и SHA-1 после цели \texttt{doc}. Отчёт подготовлен в стиле ЛР2 и содержит подробное описание выполнения работы.
+
+\end{document}
