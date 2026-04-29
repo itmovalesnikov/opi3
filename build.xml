@@ -63,6 +63,10 @@
             <fileset dir="." includes="**/*~" defaultexcludes="false" />
             <fileset dir="." includes="**/*.bak" defaultexcludes="false" />
         </delete>
+        <exec executable="git" failifexecutionfails="true">
+            <arg value="worktree" />
+            <arg value="prune" />
+        </exec>
     </target>
 
     <target name="test" depends="build">
@@ -123,85 +127,54 @@
         </war>
     </target>
 
-    <target name="team" depends="build">
-        <available file=".git" type="dir" property="git.available" />
-        <if>
-            <isset property="git.available" />
-            <then>
-                <exec executable="git" outputproperty="git.log" failifexecutionfails="true">
-                    <arg value="log" />
-                    <arg value="--oneline" />
-                    <arg value="-${git.revisions}" />
-                </exec>
-                <mkdir dir="${temp.dir}/git-revisions" />
-                <mkdir dir="${temp.dir}/builds" />
-                <exec executable="git" outputproperty="commit1" failifexecutionfails="false">
-                    <arg value="rev-parse" />
-                    <arg value="HEAD~1" />
-                </exec>
-                <exec executable="git" outputproperty="commit2" failifexecutionfails="false">
-                    <arg value="rev-parse" />
-                    <arg value="HEAD~2" />
-                </exec>
-                <if>
-                    <not>
-                        <equals arg1="${commit1}" arg2="" />
-                    </not>
-                    <then>
-                        <mkdir dir="${temp.dir}/revision1" />
-                        <exec executable="git">
-                            <arg value="clone" />
-                            <arg value="--depth" />
-                            <arg value="1" />
-                            <arg value="." />
-                            <arg value="${temp.dir}/revision1" />
-                        </exec>
-                        <exec executable="git" dir="${temp.dir}/revision1" failonerror="false">
-                            <arg value="checkout" />
-                            <arg value="${commit1}" />
-                        </exec>
-                        <exec executable="ant" dir="${temp.dir}/revision1" failonerror="false">
-                            <arg value="build" />
-                            <arg value="-Ddist.dir=${basedir}/${temp.dir}/builds" />
-                            <arg value="-Djar.filename=web3-rev1.jar" />
-                        </exec>
-                    </then>
-                </if>
-                <if>
-                    <not>
-                        <equals arg1="${commit2}" arg2="" />
-                    </not>
-                    <then>
-                        <mkdir dir="${temp.dir}/revision2" />
-                        <exec executable="git">
-                            <arg value="clone" />
-                            <arg value="--depth" />
-                            <arg value="1" />
-                            <arg value="." />
-                            <arg value="${temp.dir}/revision2" />
-                        </exec>
-                        <exec executable="git" dir="${temp.dir}/revision2" failonerror="false">
-                            <arg value="checkout" />
-                            <arg value="${commit2}" />
-                        </exec>
-                        <exec executable="ant" dir="${temp.dir}/revision2" failonerror="false">
-                            <arg value="build" />
-                            <arg value="-Ddist.dir=${basedir}/${temp.dir}/builds" />
-                            <arg value="-Djar.filename=web3-rev2.jar" />
-                        </exec>
-                    </then>
-                </if>
-                <copy todir="${temp.dir}/builds" failonerror="false">
-                    <fileset dir="${dist.dir}" includes="*.jar" />
-                </copy>
-                <zip
-                    destfile="${git.archive.path}"
-                    basedir="${temp.dir}/builds">
-                    <include name="**/*" />
-                </zip>
-            </then>
-            <else>
-            </else>
-        </if>
+    <target name="team">
+        <!-- HEAD~1 -->
+        <exec executable="git" outputproperty="commit1" failifexecutionfails="true">
+            <arg value="log" />
+            <arg value="HEAD~1" />
+            <arg value="-n" />
+            <arg value="1" />
+            <arg value="--pretty=format:%H" />
+        </exec>
+
+        <exec executable="git" failifexecutionfails="true">
+            <arg value="worktree" />
+            <arg value="add" />
+            <arg value="-f" />
+            <arg value="${temp.dir}/${commit1}" />
+            <arg value="${commit1}" />
+        </exec>
+        <exec executable="/bin/sh" dir="${temp.dir}/${commit1}" failifexecutionfails="true">
+            <arg value="./init-libs.sh" />
+        </exec>
+        <ant dir="${temp.dir}/${commit1}" target="build" />
+        <copy file="${temp.dir}/${commit1}/${war.path}"
+            tofile="${temp.dir}/${project.name}-${commit1}.war" />
+
+
+        <!-- HEAD~2 -->
+        <exec executable="git" outputproperty="commit2" failifexecutionfails="true">
+            <arg value="log" />
+            <arg value="HEAD~2" />
+            <arg value="-n" />
+            <arg value="1" />
+            <arg value="--pretty=format:%H" />
+        </exec>
+
+        <exec executable="git" failifexecutionfails="true">
+            <arg value="worktree" />
+            <arg value="add" />
+            <arg value="-f" />
+            <arg value="${temp.dir}/${commit2}" />
+            <arg value="${commit2}" />
+        </exec>
+        <exec executable="/bin/sh" dir="${temp.dir}/${commit2}" failifexecutionfails="true">
+            <arg value="./init-libs.sh" />
+        </exec>
+        <ant dir="${temp.dir}/${commit2}" target="build" />
+        <copy file="${temp.dir}/${commit2}/${war.path}"
+            tofile="${temp.dir}/${project.name}-${commit2}.war" />
+
+        <zip destfile="web3-team.zip" basedir="${temp.dir}" />
     </target>
 </project>

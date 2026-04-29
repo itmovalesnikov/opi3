@@ -2,6 +2,7 @@
 /lib/
 /build/
 /dist/
+web3-team.zip
 
 # LaTeX report build artifacts
 /report/*.aux
@@ -14,3 +15,4 @@
 /report/*.synctex.gz
 /report/*.png
 /report/*.pdf
+
