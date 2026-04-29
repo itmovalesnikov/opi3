@@ -1,19 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ============================================================================
-     Apache Ant Build Script для Web3 Проекта
-     Цели: compile, build, clean, test, doc, team
-     ============================================================================ -->
-
 <project name="web3" default="build" basedir=".">
 
-    <!-- ========================================================================
-         ЗАГРУЗКА СВОЙСТВ
-         ======================================================================== -->
     <property file="build.properties"/>
 
-    <!-- ========================================================================
-         ОПРЕДЕЛЕНИЕ КЛАССПАТЕЙ
-         ======================================================================== -->
     <path id="compile.classpath">
         <fileset dir="${lib.compile.dir}">
             <include name="*.jar"/>
@@ -28,14 +17,7 @@
         </fileset>
     </path>
 
-    <!-- ========================================================================
-         ИНИЦИАЛИЗАЦИЯ
-         ======================================================================== -->
     <target name="init">
-        <echo message="========================================"/>
-        <echo message="Инициализация проекта ${project.name}"/>
-        <echo message="Версия: ${project.version}"/>
-        <echo message="========================================"/>
         <mkdir dir="${build.dir}"/>
         <mkdir dir="${classes.dir}"/>
         <mkdir dir="${test.classes.dir}"/>
@@ -47,21 +29,20 @@
         <tstamp>
             <format property="build.time" pattern="yyyy-MM-dd HH:mm:ss"/>
         </tstamp>
-        <echo message="Время сборки: ${build.time}"/>
     </target>
 
-    <!-- ========================================================================
-         ЦЕЛЕВАЯ ЗАДАЧА: compile
-         Компиляция исходных кодов проекта
-         ======================================================================== -->
-    <target name="compile" depends="init" description="Компиляция исходных кодов проекта">
-        <echo message=""/>
-        <echo message="========================================"/>
-        <echo message="ЭТАП 1: КОМПИЛЯЦИЯ ИСХОДНЫХ КОДОВ"/>
-        <echo message="========================================"/>
-        
-        <!-- Компиляция основных исходных кодов -->
-        <echo message="Компилирование файлов из ${src.dir}..."/>
+    <target name="compile" depends="init">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${test.classes.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${docs.javadoc.dir}"/>
+        <mkdir dir="${reports.dir}"/>
+        <mkdir dir="${temp.dir}"/>
+        <mkdir dir="${build.dir}/META-INF"/>
+        <tstamp>
+            <format property="build.time" pattern="yyyy-MM-dd HH:mm:ss"/>
+        </tstamp>
         <javac 
             srcdir="${src.dir}" 
             destdir="${classes.dir}"
@@ -74,30 +55,14 @@
             classpathref="compile.classpath">
             <compilerarg value="-parameters"/>
         </javac>
-        
-        <!-- Копирование ресурсов -->
-        <echo message="Копирование ресурсов из ${resources.dir}..."/>
         <copy todir="${classes.dir}" failonerror="false">
             <fileset dir="${resources.dir}">
                 <include name="**/*"/>
             </fileset>
         </copy>
-        
-        <echo message="✓ Компиляция успешно завершена"/>
     </target>
 
-    <!-- ========================================================================
-         ЦЕЛЕВАЯ ЗАДАЧА: build
-         Компиляция и упаковка в JAR-архив
-         ======================================================================== -->
-    <target name="build" depends="compile" description="Компиляция и упаковка в JAR-архив">
-        <echo message=""/>
-        <echo message="========================================"/>
-        <echo message="ЭТАП 2: СОЗДАНИЕ JAR-АРХИВА"/>
-        <echo message="========================================"/>
-        
-        <!-- Генерация MANIFEST.MF файла -->
-        <echo message="Создание файла манифеста..."/>
+    <target name="build" depends="compile">
         <manifest file="${manifest.path}">
             <attribute name="Manifest-Version" value="1.0"/>
             <attribute name="Implementation-Title" value="${project.name}"/>
@@ -108,9 +73,6 @@
             <attribute name="Build-Java-Version" value="${ant.java.version}"/>
             <attribute name="X-Project-Encoding" value="${project.encoding}"/>
         </manifest>
-        
-        <!-- Создание JAR-архива -->
-        <echo message="Упаковка классов в ${jar.filename}..."/>
         <jar 
             jarfile="${jar.path}"
             basedir="${classes.dir}"
@@ -121,55 +83,26 @@
             <include name="**/*.fxml"/>
             <exclude name="**/test/**"/>
         </jar>
-        
-        <echo message="✓ JAR-архив успешно создан: ${jar.path}"/>
         <exec executable="ls" outputproperty="jar.size.output">
             <arg value="-lh"/>
             <arg value="${jar.path}"/>
         </exec>
-        <echo message="Размер архива: ${jar.size.output}"/>
     </target>
 
-    <!-- ========================================================================
-         ЦЕЛЕВАЯ ЗАДАЧА: clean
-         Удаление скомпилированных классов и временных файлов
-         ======================================================================== -->
-    <target name="clean" description="Удаление скомпилированных файлов и временных архивов">
-        <echo message=""/>
-        <echo message="========================================"/>
-        <echo message="ЭТАП 3: ОЧИСТКА ВРЕМЕННЫХ ФАЙЛОВ"/>
-        <echo message="========================================"/>
-        
+    <target name="clean">
         <delete dir="${build.dir}" failonerror="false"/>
         <delete dir="${dist.dir}" failonerror="false"/>
-        
-        <!-- Удаление резервных файлов -->
         <delete failonerror="false">
             <fileset dir="." includes="**/*~" defaultexcludes="false"/>
             <fileset dir="." includes="**/*.bak" defaultexcludes="false"/>
         </delete>
-        
-        <echo message="✓ Очистка завершена"/>
     </target>
 
-    <!-- ========================================================================
-         ЦЕЛЕВАЯ ЗАДАЧА: test
-         Запуск JUnit тестов проекта
-         ======================================================================== -->
-    <target name="test" depends="build" description="Запуск JUnit тестов проекта">
-        <echo message=""/>
-        <echo message="========================================"/>
-        <echo message="ЭТАП 4: ЗАПУСК ПОДМОДУЛЬНЫХ ТЕСТОВ"/>
-        <echo message="========================================"/>
-        
-        <echo message="Проверка наличия тестов..."/>
+    <target name="test" depends="build">
         <available file="${src.test.dir}" type="dir" property="tests.exist"/>
-        
         <if>
             <isset property="tests.exist"/>
             <then>
-                <!-- Компиляция тестов -->
-                <echo message="Компилирование тестов..."/>
                 <javac 
                     srcdir="${src.test.dir}" 
                     destdir="${test.classes.dir}"
@@ -180,16 +113,11 @@
                     classpathref="test.classpath">
                     <compilerarg value="-parameters"/>
                 </javac>
-                
-                <!-- Копирование тестовых ресурсов -->
                 <copy todir="${test.classes.dir}" failonerror="false">
                     <fileset dir="${resources.test.dir}">
                         <include name="**/*"/>
                     </fileset>
                 </copy>
-                
-                <!-- Запуск тестов -->
-                <echo message="Запуск JUnit тестов..."/>
                 <junit printsummary="yes" haltonfailure="no" haltonerror="no">
                     <classpath>
                         <path refid="test.classpath"/>
@@ -204,28 +132,13 @@
                         </fileset>
                     </batchtest>
                 </junit>
-                
-                <echo message="✓ Тесты выполнены"/>
-                <echo message="Результаты сохранены в ${reports.dir}"/>
             </then>
             <else>
-                <echo message="⚠ Тесты не найдены в ${src.test.dir}"/>
             </else>
         </if>
     </target>
 
-    <!-- ========================================================================
-         ЦЕЛЕВАЯ ЗАДАЧА: doc
-         Генерация Javadoc и добавление контрольных сумм в MANIFEST.MF
-         ======================================================================== -->
-    <target name="doc" depends="build" description="Генерация javadoc и контрольных сумм">
-        <echo message=""/>
-        <echo message="========================================"/>
-        <echo message="ЭТАП 5: ГЕНЕРАЦИЯ ДОКУМЕНТАЦИИ И КОНТРОЛЬНЫХ СУММ"/>
-        <echo message="========================================"/>
-        
-        <!-- Генерация Javadoc -->
-        <echo message="Генерирование Javadoc..."/>
+    <target name="doc" depends="build">
         <javadoc 
             sourcepath="${src.dir}"
             destdir="${docs.javadoc.dir}"
@@ -241,11 +154,6 @@
                 <include name="com/github/itmovalesnikov/web3/**"/>
             </packageset>
         </javadoc>
-        
-        <echo message="✓ Javadoc создана в ${docs.javadoc.dir}"/>
-        
-        <!-- Расчёт контрольных сумм файлов проекта -->
-        <echo message="Расчёт контрольных сумм MD5 и SHA-1..."/>
         <checksum 
             file="${jar.path}" 
             property="jar.md5" 
@@ -254,11 +162,6 @@
             file="${jar.path}" 
             property="jar.sha1" 
             algorithm="SHA1"/>
-        
-        <echo message="MD5: ${jar.md5}"/>
-        <echo message="SHA-1: ${jar.sha1}"/>
-        
-        <!-- Обновление MANIFEST.MF с контрольными суммами -->
         <manifest file="${manifest.path}">
             <attribute name="Manifest-Version" value="1.0"/>
             <attribute name="Implementation-Title" value="${project.name}"/>
@@ -271,8 +174,6 @@
             <attribute name="X-SHA1-Checksum" value="${jar.sha1}"/>
             <attribute name="X-MD5-Checksum" value="${jar.md5}"/>
         </manifest>
-        
-        <!-- Пересоздание JAR с обновленным манифестом -->
         <jar 
             jarfile="${jar.path}"
             basedir="${classes.dir}"
@@ -282,71 +183,40 @@
             <include name="**/*.properties"/>
             <include name="**/*.xml"/>
         </jar>
-        
-        <!-- Добавление Javadoc в архив -->
         <jar 
             jarfile="${jar.path}"
             basedir="${docs.javadoc.dir}"
             prefix="docs/javadoc"
             update="true">
         </jar>
-        
-        <echo message="✓ MANIFEST.MF обновлена с контрольными суммами"/>
-        <echo message="✓ Javadoc добавлена в архив"/>
     </target>
 
-    <!-- ========================================================================
-         ЦЕЛЕВАЯ ЗАДАЧА: team
-         Получение 2 предыдущих ревизий из git и их сборка
-         ======================================================================== -->
-    <target name="team" depends="build" description="Сборка предыдущих версий из git и упаковка в zip">
-        <echo message=""/>
-        <echo message="========================================"/>
-        <echo message="ЭТАП 6: СБОРКА ПРЕДЫДУЩИХ GIT РЕВИЗИЙ"/>
-        <echo message="========================================"/>
-        
-        <!-- Проверка наличия git репозитория -->
+    <target name="team" depends="build">
         <available file=".git" type="dir" property="git.available"/>
-        
         <if>
             <isset property="git.available"/>
             <then>
-                <echo message="Git репозиторий обнаружен"/>
-                
-                <!-- Получение предыдущих ревизий -->
                 <exec executable="git" outputproperty="git.log" failifexecutionfails="true">
                     <arg value="log"/>
                     <arg value="--oneline"/>
                     <arg value="-${git.revisions}"/>
                 </exec>
-                
-                <echo message="Найденные ревизии:"/>
-                <echo message="${git.log}"/>
-                
-                <!-- Создание директории для временного хранилища -->
                 <mkdir dir="${temp.dir}/git-revisions"/>
                 <mkdir dir="${temp.dir}/builds"/>
-                
-                <!-- Получение commit hash'ей -->
                 <exec executable="git" outputproperty="commit1" failifexecutionfails="false">
                     <arg value="rev-parse"/>
                     <arg value="HEAD~1"/>
                 </exec>
-                
                 <exec executable="git" outputproperty="commit2" failifexecutionfails="false">
                     <arg value="rev-parse"/>
                     <arg value="HEAD~2"/>
                 </exec>
-                
-                <!-- Обработка первой предыдущей ревизии -->
                 <if>
                     <not>
                         <equals arg1="${commit1}" arg2=""/>
                     </not>
                     <then>
-                        <echo message="Обработка ревизии 1: ${commit1}"/>
                         <mkdir dir="${temp.dir}/revision1"/>
-                        
                         <exec executable="git">
                             <arg value="clone"/>
                             <arg value="--depth"/>
@@ -354,14 +224,10 @@
                             <arg value="."/>
                             <arg value="${temp.dir}/revision1"/>
                         </exec>
-                        
                         <exec executable="git" dir="${temp.dir}/revision1" failonerror="false">
                             <arg value="checkout"/>
                             <arg value="${commit1}"/>
                         </exec>
-                        
-                        <!-- Сборка первой ревизии -->
-                        <echo message="Сборка ревизии 1..."/>
                         <exec executable="ant" dir="${temp.dir}/revision1" failonerror="false">
                             <arg value="build"/>
                             <arg value="-Ddist.dir=${basedir}/${temp.dir}/builds"/>
@@ -369,16 +235,12 @@
                         </exec>
                     </then>
                 </if>
-                
-                <!-- Обработка второй предыдущей ревизии -->
                 <if>
                     <not>
                         <equals arg1="${commit2}" arg2=""/>
                     </not>
                     <then>
-                        <echo message="Обработка ревизии 2: ${commit2}"/>
                         <mkdir dir="${temp.dir}/revision2"/>
-                        
                         <exec executable="git">
                             <arg value="clone"/>
                             <arg value="--depth"/>
@@ -386,14 +248,10 @@
                             <arg value="."/>
                             <arg value="${temp.dir}/revision2"/>
                         </exec>
-                        
                         <exec executable="git" dir="${temp.dir}/revision2" failonerror="false">
                             <arg value="checkout"/>
                             <arg value="${commit2}"/>
                         </exec>
-                        
-                        <!-- Сборка второй ревизии -->
-                        <echo message="Сборка ревизии 2..."/>
                         <exec executable="ant" dir="${temp.dir}/revision2" failonerror="false">
                             <arg value="build"/>
                             <arg value="-Ddist.dir=${basedir}/${temp.dir}/builds"/>
@@ -401,84 +259,24 @@
                         </exec>
                     </then>
                 </if>
-                
-                <!-- Копирование текущей сборки -->
                 <copy todir="${temp.dir}/builds" failonerror="false">
                     <fileset dir="${dist.dir}" includes="*.jar"/>
                 </copy>
-                
-                <!-- Упаковка результатов в ZIP -->
-                <echo message="Упаковка результатов в ZIP архив..."/>
                 <zip 
                     destfile="${git.archive.path}"
                     basedir="${temp.dir}/builds">
                     <include name="**/*"/>
                 </zip>
-                
-                <echo message="✓ Git ревизии обработаны"/>
-                <echo message="Архив создан: ${git.archive.path}"/>
             </then>
             <else>
-                <echo message="⚠ Git репозиторий не обнаружен. Пропуск цели team."/>
-                <echo message="Убедитесь, что проект находится в git репозитории."/>
             </else>
         </if>
     </target>
 
-    <!-- ========================================================================
-         ВСПОМОГАТЕЛЬНЫЕ ЦЕЛИ
-         ======================================================================== -->
-
-    <!-- Цель для отображения справки -->
-    <target name="help" description="Отображение справки по доступным целям">
-        <echo message=""/>
-        <echo message="========================================"/>
-        <echo message="Apache Ant - Сценарий сборки ${project.name}"/>
-        <echo message="========================================"/>
-        <echo message=""/>
-        <echo message="Доступные цели:"/>
-        <echo message="  compile   - Компиляция исходных кодов"/>
-        <echo message="  build     - Компиляция и упаковка в JAR"/>
-        <echo message="  clean     - Очистка временных файлов"/>
-        <echo message="  test      - Запуск JUnit тестов"/>
-        <echo message="  doc       - Генерация javadoc и контрольных сумм"/>
-        <echo message="  team      - Сборка предыдущих git ревизий"/>
-        <echo message="  help      - Отображение этой справки"/>
-        <echo message="  info      - Информация о проекте"/>
-        <echo message=""/>
-        <echo message="Примеры использования:"/>
-        <echo message="  ant compile"/>
-        <echo message="  ant build"/>
-        <echo message="  ant clean build"/>
-        <echo message="  ant test"/>
-        <echo message="  ant doc"/>
-        <echo message="  ant team"/>
-        <echo message=""/>
+    <target name="help">
     </target>
 
-    <!-- Цель для отображения информации о проекте -->
-    <target name="info" description="Вывод информации о проекте">
-        <echo message=""/>
-        <echo message="========================================"/>
-        <echo message="ИНФОРМАЦИЯ О ПРОЕКТЕ"/>
-        <echo message="========================================"/>
-        <echo message="Название: ${project.name}"/>
-        <echo message="Версия: ${project.version}"/>
-        <echo message="Автор: ${project.author}"/>
-        <echo message=""/>
-        <echo message="Директории:"/>
-        <echo message="  Исходники: ${src.dir}"/>
-        <echo message="  Тесты: ${src.test.dir}"/>
-        <echo message="  Ресурсы: ${resources.dir}"/>
-        <echo message="  Сборка: ${build.dir}"/>
-        <echo message="  Дистрибутив: ${dist.dir}"/>
-        <echo message="  Документация: ${docs.javadoc.dir}"/>
-        <echo message=""/>
-        <echo message="Параметры компиляции:"/>
-        <echo message="  Версия Java: ${javac.source} → ${javac.target}"/>
-        <echo message="  Кодировка: ${javac.encoding}"/>
-        <echo message="  Debug: ${javac.debug}"/>
-        <echo message=""/>
+    <target name="info">
     </target>
 
 </project>
