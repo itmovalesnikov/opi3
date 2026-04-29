@@ -63,10 +63,6 @@
             <fileset dir="." includes="**/*~" defaultexcludes="false" />
             <fileset dir="." includes="**/*.bak" defaultexcludes="false" />
         </delete>
-        <exec executable="git" failifexecutionfails="true">
-            <arg value="worktree" />
-            <arg value="prune" />
-        </exec>
     </target>
 
     <target name="test" depends="build">
@@ -150,7 +146,7 @@
         <ant dir="${temp.dir}/${commit1}" target="build" />
         <copy file="${temp.dir}/${commit1}/${war.path}"
             tofile="${temp.dir}/${project.name}-${commit1}.war" />
-
+        <delete dir="${temp.dir}/${commit1}" />
 
         <!-- HEAD~2 -->
         <exec executable="git" outputproperty="commit2" failifexecutionfails="true">
@@ -174,7 +170,13 @@
         <ant dir="${temp.dir}/${commit2}" target="build" />
         <copy file="${temp.dir}/${commit2}/${war.path}"
             tofile="${temp.dir}/${project.name}-${commit2}.war" />
+        <delete dir="${temp.dir}/${commit1}" />
 
         <zip destfile="web3-team.zip" basedir="${temp.dir}" />
+
+        <exec executable="git" failifexecutionfails="true">
+            <arg value="worktree" />
+            <arg value="prune" />
+        </exec>
     </target>
 </project>
