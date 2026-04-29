@@ -23,9 +23,6 @@
         <mkdir dir="${reports.dir}" />
         <mkdir dir="${temp.dir}" />
         <mkdir dir="${build.dir}/META-INF" />
-        <tstamp>
-            <format property="build.time" pattern="yyyy-MM-dd HH:mm:ss" />
-        </tstamp>
     </target>
 
     <target name="compile" depends="init">
@@ -44,20 +41,12 @@
     </target>
 
     <target name="build" depends="compile">
-        <manifest file="${manifest.path}">
-            <attribute name="Manifest-Version" value="1.0" />
-            <attribute name="Implementation-Title" value="${project.name}" />
-            <attribute name="Implementation-Version" value="${project.version}" />
-            <attribute name="Implementation-Vendor" value="${project.author}" />
-            <attribute name="Created-By" value="Apache Ant" />
-            <attribute name="Build-Date" value="${build.time}" />
-            <attribute name="Build-Java-Version" value="${ant.java.version}" />
-            <attribute name="X-Project-Encoding" value="${project.encoding}" />
-        </manifest>
-
         <war destfile="${dist.dir}/web3.war"
-            webxml="${web.dir}/WEB-INF/web.xml"
-            manifest="${manifest.path}">
+            webxml="${web.dir}/WEB-INF/web.xml">
+            <manifest>
+                <attribute name="Manifest-Version" value="1.0" />
+                <attribute name="Implementation-Version" value="${project.version}" />
+            </manifest>
             <classes dir="${classes.dir}" />
             <lib dir="${lib.package.dir}" />
             <fileset dir="${web.dir}">
@@ -126,13 +115,7 @@
         <war destfile="${war.path}" update="true">
             <manifest>
                 <attribute name="Manifest-Version" value="1.0" />
-                <attribute name="Implementation-Title" value="${project.name}" />
                 <attribute name="Implementation-Version" value="${project.version}" />
-                <attribute name="Implementation-Vendor" value="${project.author}" />
-                <attribute name="Created-By" value="Apache Ant" />
-                <attribute name="Build-Date" value="${build.time}" />
-                <attribute name="Build-Java-Version" value="${ant.java.version}" />
-                <attribute name="X-Project-Encoding" value="${project.encoding}" />
                 <attribute name="X-SHA1-Checksum" value="${war.sha1}" />
                 <attribute name="X-MD5-Checksum" value="${war.md5}" />
             </manifest>
@@ -221,11 +204,4 @@
             </else>
         </if>
     </target>
-
-    <target name="help">
-    </target>
-
-    <target name="info">
-    </target>
-
 </project>
