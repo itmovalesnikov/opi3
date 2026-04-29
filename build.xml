@@ -123,85 +123,78 @@
         </war>
     </target>
 
-    <target name="team" depends="build">
-        <available file=".git" type="dir" property="git.available" />
-        <if>
-            <isset property="git.available" />
-            <then>
-                <exec executable="git" outputproperty="git.log" failifexecutionfails="true">
-                    <arg value="log" />
-                    <arg value="--oneline" />
-                    <arg value="-${git.revisions}" />
-                </exec>
-                <mkdir dir="${temp.dir}/git-revisions" />
-                <mkdir dir="${temp.dir}/builds" />
-                <exec executable="git" outputproperty="commit1" failifexecutionfails="false">
-                    <arg value="rev-parse" />
-                    <arg value="HEAD~1" />
-                </exec>
-                <exec executable="git" outputproperty="commit2" failifexecutionfails="false">
-                    <arg value="rev-parse" />
-                    <arg value="HEAD~2" />
-                </exec>
-                <if>
-                    <not>
-                        <equals arg1="${commit1}" arg2="" />
-                    </not>
-                    <then>
-                        <mkdir dir="${temp.dir}/revision1" />
-                        <exec executable="git">
-                            <arg value="clone" />
-                            <arg value="--depth" />
-                            <arg value="1" />
-                            <arg value="." />
-                            <arg value="${temp.dir}/revision1" />
-                        </exec>
-                        <exec executable="git" dir="${temp.dir}/revision1" failonerror="false">
-                            <arg value="checkout" />
-                            <arg value="${commit1}" />
-                        </exec>
-                        <exec executable="ant" dir="${temp.dir}/revision1" failonerror="false">
-                            <arg value="build" />
-                            <arg value="-Ddist.dir=${basedir}/${temp.dir}/builds" />
-                            <arg value="-Djar.filename=web3-rev1.jar" />
-                        </exec>
-                    </then>
-                </if>
-                <if>
-                    <not>
-                        <equals arg1="${commit2}" arg2="" />
-                    </not>
-                    <then>
-                        <mkdir dir="${temp.dir}/revision2" />
-                        <exec executable="git">
-                            <arg value="clone" />
-                            <arg value="--depth" />
-                            <arg value="1" />
-                            <arg value="." />
-                            <arg value="${temp.dir}/revision2" />
-                        </exec>
-                        <exec executable="git" dir="${temp.dir}/revision2" failonerror="false">
-                            <arg value="checkout" />
-                            <arg value="${commit2}" />
-                        </exec>
-                        <exec executable="ant" dir="${temp.dir}/revision2" failonerror="false">
-                            <arg value="build" />
-                            <arg value="-Ddist.dir=${basedir}/${temp.dir}/builds" />
-                            <arg value="-Djar.filename=web3-rev2.jar" />
-                        </exec>
-                    </then>
-                </if>
-                <copy todir="${temp.dir}/builds" failonerror="false">
-                    <fileset dir="${dist.dir}" includes="*.jar" />
-                </copy>
-                <zip
-                    destfile="${git.archive.path}"
-                    basedir="${temp.dir}/builds">
-                    <include name="**/*" />
-                </zip>
-            </then>
-            <else>
-            </else>
-        </if>
-    </target>
+    <target name="team" depends="init">
+    <available file=".git" type="dir" property="git.available" />
+
+    <fail unless="git.available" message="Git repository not found: .git directory is missing" />
+
+    <delete dir="${temp.dir}/git-revisions" failonerror="false" />
+    <delete dir="${temp.dir}/builds" failonerror="false" />
+
+    <mkdir dir="${temp.dir}/git-revisions" />
+    <mkdir dir="${temp.dir}/builds" />
+    <mkdir dir="${dist.dir}" />
+
+    <!-- Получаем две предыдущие ревизии -->
+    <exec executable="git" outputproperty="commit1" failonerror="true">
+        <arg value="rev-parse" />
+        <arg value="HEAD~1" />
+    </exec>
+
+    <exec executable="git" outputproperty="commit2" failonerror="true">
+        <arg value="rev-parse" />
+        <arg value="HEAD~2" />
+    </exec>
+
+    <!-- Экспорт первой предыдущей ревизии -->
+    <mkdir dir="${temp.dir}/git-revisions/revision1" />
+
+    <exec executable="git" failonerror="true">
+        <arg value="archive" />
+        <arg value="${commit1}" />
+        <arg value="--format=tar" />
+        <arg value="--output=${temp.dir}/revision1.tar" />
+    </exec>
+
+    <untar src="${temp.dir}/revision1.tar" dest="${temp.dir}/git-revisions/revision1" />
+
+    <!-- Сборка первой ревизии через цель build -->
+    <exec executable="ant" dir="${temp.dir}/git-revisions/revision1" failonerror="true">
+        <arg value="build" />
+    </exec>
+
+    <copy
+        file="${temp.dir}/git-revisions/revision1/${war.path}"
+        tofile="${temp.dir}/builds/${project.name}-rev1.war"
+        failonerror="true" />
+
+    <!-- Экспорт второй предыдущей ревизии -->
+    <mkdir dir="${temp.dir}/git-revisions/revision2" />
+
+    <exec executable="git" failonerror="true">
+        <arg value="archive" />
+        <arg value="${commit2}" />
+        <arg value="--format=tar" />
+        <arg value="--output=${temp.dir}/revision2.tar" />
+    </exec>
+
+    <untar src="${temp.dir}/revision2.tar" dest="${temp.dir}/git-revisions/revision2" />
+
+    <!-- Сборка второй ревизии через цель build -->
+    <exec executable="ant" dir="${temp.dir}/git-revisions/revision2" failonerror="true">
+        <arg value="build" />
+    </exec>
+
+    <copy
+        file="${temp.dir}/git-revisions/revision2/${war.path}"
+        tofile="${temp.dir}/builds/${project.name}-rev2.war"
+        failonerror="true" />
+
+    <!-- Упаковка результатов в ZIP -->
+    <zip destfile="${git.archive.path}">
+        <fileset dir="${temp.dir}/builds">
+            <include name="*.war" />
+        </fileset>
+    </zip>
+</target>
 </project>
