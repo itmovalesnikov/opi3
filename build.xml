@@ -32,17 +32,6 @@
     </target>
 
     <target name="compile" depends="init">
-        <mkdir dir="${build.dir}"/>
-        <mkdir dir="${classes.dir}"/>
-        <mkdir dir="${test.classes.dir}"/>
-        <mkdir dir="${dist.dir}"/>
-        <mkdir dir="${docs.javadoc.dir}"/>
-        <mkdir dir="${reports.dir}"/>
-        <mkdir dir="${temp.dir}"/>
-        <mkdir dir="${build.dir}/META-INF"/>
-        <tstamp>
-            <format property="build.time" pattern="yyyy-MM-dd HH:mm:ss"/>
-        </tstamp>
         <javac 
             srcdir="${src.dir}" 
             destdir="${classes.dir}"
