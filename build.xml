@@ -12,9 +12,6 @@
     <path id="test.classpath">
         <path refid="compile.classpath" />
         <pathelement path="${classes.dir}" />
-        <fileset dir="${lib.test.dir}" erroronmissingdir="false">
-            <include name="*.jar" />
-        </fileset>
     </path>
 
     <target name="init">
@@ -35,11 +32,6 @@
         <javac
             srcdir="${src.dir}"
             destdir="${classes.dir}"
-            source="${javac.source}"
-            target="${javac.target}"
-            encoding="${javac.encoding}"
-            debug="${javac.debug}"
-            debuglevel="${javac.debuglevel}"
             includeAntRuntime="false"
             classpathref="compile.classpath">
             <compilerarg value="-parameters" />
@@ -88,43 +80,25 @@
     </target>
 
     <target name="test" depends="build">
-        <available file="${src.test.dir}" type="dir" property="tests.exist" />
-        <if>
-            <isset property="tests.exist" />
-            <then>
-                <javac
-                    srcdir="${src.test.dir}"
-                    destdir="${test.classes.dir}"
-                    source="${javac.source}"
-                    target="${javac.target}"
-                    encoding="${javac.encoding}"
-                    debug="${javac.debug}"
-                    classpathref="test.classpath">
-                    <compilerarg value="-parameters" />
-                </javac>
-                <copy todir="${test.classes.dir}" failonerror="false">
-                    <fileset dir="${resources.test.dir}">
-                        <include name="**/*" />
-                    </fileset>
-                </copy>
-                <junit printsummary="yes" haltonfailure="no" haltonerror="no">
-                    <classpath>
-                        <path refid="test.classpath" />
-                        <pathelement path="${test.classes.dir}" />
-                    </classpath>
-                    <formatter type="plain" usefile="false" />
-                    <formatter type="xml" usefile="true" todir="${reports.dir}" />
-                    <batchtest todir="${reports.dir}">
-                        <fileset dir="${src.test.dir}">
-                            <include name="**/*Test.java" />
-                            <include name="**/*Tests.java" />
-                        </fileset>
-                    </batchtest>
-                </junit>
-            </then>
-            <else>
-            </else>
-        </if>
+        <javac
+            srcdir="${src.test.dir}"
+            destdir="${test.classes.dir}"
+            includeantruntime="false"
+            classpathref="test.classpath">
+            <compilerarg value="-parameters" />
+        </javac>
+        <junit haltonfailure="no" haltonerror="no">
+            <classpath>
+                <path refid="test.classpath" />
+                <pathelement path="${test.classes.dir}" />
+            </classpath>
+            <formatter type="plain" usefile="false" />
+            <batchtest>
+                <fileset dir="${src.test.dir}">
+                    <include name="**/*Test*.java" />
+                </fileset>
+            </batchtest>
+        </junit>
     </target>
 
     <target name="doc" depends="build">

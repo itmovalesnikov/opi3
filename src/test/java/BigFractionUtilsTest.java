@@ -1,7 +1,7 @@
 import com.github.itmovalesnikov.web3.utils.BigFractionUtils;
 import org.apache.commons.math3.fraction.BigFraction;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class BigFractionUtilsTest {
 
