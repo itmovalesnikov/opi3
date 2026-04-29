@@ -1,6 +1,7 @@
 /target/
 /lib/
 /build/
+/dist/
 
 # LaTeX report build artifacts
 /report/*.aux
@@ -12,4 +13,4 @@
 /report/*.toc
 /report/*.synctex.gz
 /report/*.png
-/dist/
+/report/*.pdf
