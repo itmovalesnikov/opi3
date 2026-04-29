@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="web3" default="build" basedir=".">
 
-    <property file="build.properties"/>
+    <property file="build.properties" />
 
     <path id="compile.classpath">
         <fileset dir="${lib.compile.dir}">
-            <include name="*.jar"/>
+            <include name="*.jar" />
         </fileset>
     </path>
 
     <path id="test.classpath">
-        <path refid="compile.classpath"/>
-        <pathelement path="${classes.dir}"/>
+        <path refid="compile.classpath" />
+        <pathelement path="${classes.dir}" />
         <fileset dir="${lib.test.dir}" erroronmissingdir="false">
-            <include name="*.jar"/>
+            <include name="*.jar" />
         </fileset>
     </path>
 
     <target name="init">
-        <mkdir dir="${build.dir}"/>
-        <mkdir dir="${classes.dir}"/>
-        <mkdir dir="${test.classes.dir}"/>
-        <mkdir dir="${dist.dir}"/>
-        <mkdir dir="${docs.javadoc.dir}"/>
-        <mkdir dir="${reports.dir}"/>
-        <mkdir dir="${temp.dir}"/>
-        <mkdir dir="${build.dir}/META-INF"/>
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${classes.dir}" />
+        <mkdir dir="${test.classes.dir}" />
+        <mkdir dir="${dist.dir}" />
+        <mkdir dir="${docs.javadoc.dir}" />
+        <mkdir dir="${reports.dir}" />
+        <mkdir dir="${temp.dir}" />
+        <mkdir dir="${build.dir}/META-INF" />
         <tstamp>
-            <format property="build.time" pattern="yyyy-MM-dd HH:mm:ss"/>
+            <format property="build.time" pattern="yyyy-MM-dd HH:mm:ss" />
         </tstamp>
     </target>
 
     <target name="compile" depends="init">
-        <javac 
-            srcdir="${src.dir}" 
+        <javac
+            srcdir="${src.dir}"
             destdir="${classes.dir}"
             source="${javac.source}"
             target="${javac.target}"
@@ -42,82 +42,82 @@
             debuglevel="${javac.debuglevel}"
             includeAntRuntime="false"
             classpathref="compile.classpath">
-            <compilerarg value="-parameters"/>
+            <compilerarg value="-parameters" />
         </javac>
         <copy todir="${classes.dir}" failonerror="false">
             <fileset dir="${resources.dir}">
-                <include name="**/*"/>
+                <include name="**/*" />
             </fileset>
         </copy>
     </target>
 
     <target name="build" depends="compile">
         <manifest file="${manifest.path}">
-            <attribute name="Manifest-Version" value="1.0"/>
-            <attribute name="Implementation-Title" value="${project.name}"/>
-            <attribute name="Implementation-Version" value="${project.version}"/>
-            <attribute name="Implementation-Vendor" value="${project.author}"/>
-            <attribute name="Created-By" value="Apache Ant"/>
-            <attribute name="Build-Date" value="${build.time}"/>
-            <attribute name="Build-Java-Version" value="${ant.java.version}"/>
-            <attribute name="X-Project-Encoding" value="${project.encoding}"/>
+            <attribute name="Manifest-Version" value="1.0" />
+            <attribute name="Implementation-Title" value="${project.name}" />
+            <attribute name="Implementation-Version" value="${project.version}" />
+            <attribute name="Implementation-Vendor" value="${project.author}" />
+            <attribute name="Created-By" value="Apache Ant" />
+            <attribute name="Build-Date" value="${build.time}" />
+            <attribute name="Build-Java-Version" value="${ant.java.version}" />
+            <attribute name="X-Project-Encoding" value="${project.encoding}" />
         </manifest>
-        <jar 
+        <jar
             jarfile="${jar.path}"
             basedir="${classes.dir}"
             manifest="${manifest.path}">
-            <include name="**/*.class"/>
-            <include name="**/*.properties"/>
-            <include name="**/*.xml"/>
-            <include name="**/*.fxml"/>
-            <exclude name="**/test/**"/>
+            <include name="**/*.class" />
+            <include name="**/*.properties" />
+            <include name="**/*.xml" />
+            <include name="**/*.fxml" />
+            <exclude name="**/test/**" />
         </jar>
         <exec executable="ls" outputproperty="jar.size.output">
-            <arg value="-lh"/>
-            <arg value="${jar.path}"/>
+            <arg value="-lh" />
+            <arg value="${jar.path}" />
         </exec>
     </target>
 
     <target name="clean">
-        <delete dir="${build.dir}" failonerror="false"/>
-        <delete dir="${dist.dir}" failonerror="false"/>
+        <delete dir="${build.dir}" failonerror="false" />
+        <delete dir="${dist.dir}" failonerror="false" />
         <delete failonerror="false">
-            <fileset dir="." includes="**/*~" defaultexcludes="false"/>
-            <fileset dir="." includes="**/*.bak" defaultexcludes="false"/>
+            <fileset dir="." includes="**/*~" defaultexcludes="false" />
+            <fileset dir="." includes="**/*.bak" defaultexcludes="false" />
         </delete>
     </target>
 
     <target name="test" depends="build">
-        <available file="${src.test.dir}" type="dir" property="tests.exist"/>
+        <available file="${src.test.dir}" type="dir" property="tests.exist" />
         <if>
-            <isset property="tests.exist"/>
+            <isset property="tests.exist" />
             <then>
-                <javac 
-                    srcdir="${src.test.dir}" 
+                <javac
+                    srcdir="${src.test.dir}"
                     destdir="${test.classes.dir}"
                     source="${javac.source}"
                     target="${javac.target}"
                     encoding="${javac.encoding}"
                     debug="${javac.debug}"
                     classpathref="test.classpath">
-                    <compilerarg value="-parameters"/>
+                    <compilerarg value="-parameters" />
                 </javac>
                 <copy todir="${test.classes.dir}" failonerror="false">
                     <fileset dir="${resources.test.dir}">
-                        <include name="**/*"/>
+                        <include name="**/*" />
                     </fileset>
                 </copy>
                 <junit printsummary="yes" haltonfailure="no" haltonerror="no">
                     <classpath>
-                        <path refid="test.classpath"/>
-                        <pathelement path="${test.classes.dir}"/>
+                        <path refid="test.classpath" />
+                        <pathelement path="${test.classes.dir}" />
                     </classpath>
-                    <formatter type="plain" usefile="false"/>
-                    <formatter type="xml" usefile="true" todir="${reports.dir}"/>
+                    <formatter type="plain" usefile="false" />
+                    <formatter type="xml" usefile="true" todir="${reports.dir}" />
                     <batchtest todir="${reports.dir}">
                         <fileset dir="${src.test.dir}">
-                            <include name="**/*Test.java"/>
-                            <include name="**/*Tests.java"/>
+                            <include name="**/*Test.java" />
+                            <include name="**/*Tests.java" />
                         </fileset>
                     </batchtest>
                 </junit>
@@ -128,7 +128,7 @@
     </target>
 
     <target name="doc" depends="build">
-        <javadoc 
+        <javadoc
             sourcepath="${src.dir}"
             destdir="${docs.javadoc.dir}"
             author="true"
@@ -140,39 +140,39 @@
             encoding="${javac.encoding}"
             classpathref="compile.classpath">
             <packageset dir="${src.dir}" defaultexcludes="yes">
-                <include name="com/github/itmovalesnikov/web3/**"/>
+                <include name="com/github/itmovalesnikov/web3/**" />
             </packageset>
         </javadoc>
-        <checksum 
-            file="${jar.path}" 
-            property="jar.md5" 
-            algorithm="MD5"/>
-        <checksum 
-            file="${jar.path}" 
-            property="jar.sha1" 
-            algorithm="SHA1"/>
+        <checksum
+            file="${jar.path}"
+            property="jar.md5"
+            algorithm="MD5" />
+        <checksum
+            file="${jar.path}"
+            property="jar.sha1"
+            algorithm="SHA1" />
         <manifest file="${manifest.path}">
-            <attribute name="Manifest-Version" value="1.0"/>
-            <attribute name="Implementation-Title" value="${project.name}"/>
-            <attribute name="Implementation-Version" value="${project.version}"/>
-            <attribute name="Implementation-Vendor" value="${project.author}"/>
-            <attribute name="Created-By" value="Apache Ant"/>
-            <attribute name="Build-Date" value="${build.time}"/>
-            <attribute name="Build-Java-Version" value="${ant.java.version}"/>
-            <attribute name="X-Project-Encoding" value="${project.encoding}"/>
-            <attribute name="X-SHA1-Checksum" value="${jar.sha1}"/>
-            <attribute name="X-MD5-Checksum" value="${jar.md5}"/>
+            <attribute name="Manifest-Version" value="1.0" />
+            <attribute name="Implementation-Title" value="${project.name}" />
+            <attribute name="Implementation-Version" value="${project.version}" />
+            <attribute name="Implementation-Vendor" value="${project.author}" />
+            <attribute name="Created-By" value="Apache Ant" />
+            <attribute name="Build-Date" value="${build.time}" />
+            <attribute name="Build-Java-Version" value="${ant.java.version}" />
+            <attribute name="X-Project-Encoding" value="${project.encoding}" />
+            <attribute name="X-SHA1-Checksum" value="${jar.sha1}" />
+            <attribute name="X-MD5-Checksum" value="${jar.md5}" />
         </manifest>
-        <jar 
+        <jar
             jarfile="${jar.path}"
             basedir="${classes.dir}"
             manifest="${manifest.path}"
             duplicate="preserve">
-            <include name="**/*.class"/>
-            <include name="**/*.properties"/>
-            <include name="**/*.xml"/>
+            <include name="**/*.class" />
+            <include name="**/*.properties" />
+            <include name="**/*.xml" />
         </jar>
-        <jar 
+        <jar
             jarfile="${jar.path}"
             basedir="${docs.javadoc.dir}"
             prefix="docs/javadoc"
@@ -181,80 +181,80 @@
     </target>
 
     <target name="team" depends="build">
-        <available file=".git" type="dir" property="git.available"/>
+        <available file=".git" type="dir" property="git.available" />
         <if>
-            <isset property="git.available"/>
+            <isset property="git.available" />
             <then>
                 <exec executable="git" outputproperty="git.log" failifexecutionfails="true">
-                    <arg value="log"/>
-                    <arg value="--oneline"/>
-                    <arg value="-${git.revisions}"/>
+                    <arg value="log" />
+                    <arg value="--oneline" />
+                    <arg value="-${git.revisions}" />
                 </exec>
-                <mkdir dir="${temp.dir}/git-revisions"/>
-                <mkdir dir="${temp.dir}/builds"/>
+                <mkdir dir="${temp.dir}/git-revisions" />
+                <mkdir dir="${temp.dir}/builds" />
                 <exec executable="git" outputproperty="commit1" failifexecutionfails="false">
-                    <arg value="rev-parse"/>
-                    <arg value="HEAD~1"/>
+                    <arg value="rev-parse" />
+                    <arg value="HEAD~1" />
                 </exec>
                 <exec executable="git" outputproperty="commit2" failifexecutionfails="false">
-                    <arg value="rev-parse"/>
-                    <arg value="HEAD~2"/>
+                    <arg value="rev-parse" />
+                    <arg value="HEAD~2" />
                 </exec>
                 <if>
                     <not>
-                        <equals arg1="${commit1}" arg2=""/>
+                        <equals arg1="${commit1}" arg2="" />
                     </not>
                     <then>
-                        <mkdir dir="${temp.dir}/revision1"/>
+                        <mkdir dir="${temp.dir}/revision1" />
                         <exec executable="git">
-                            <arg value="clone"/>
-                            <arg value="--depth"/>
-                            <arg value="1"/>
-                            <arg value="."/>
-                            <arg value="${temp.dir}/revision1"/>
+                            <arg value="clone" />
+                            <arg value="--depth" />
+                            <arg value="1" />
+                            <arg value="." />
+                            <arg value="${temp.dir}/revision1" />
                         </exec>
                         <exec executable="git" dir="${temp.dir}/revision1" failonerror="false">
-                            <arg value="checkout"/>
-                            <arg value="${commit1}"/>
+                            <arg value="checkout" />
+                            <arg value="${commit1}" />
                         </exec>
                         <exec executable="ant" dir="${temp.dir}/revision1" failonerror="false">
-                            <arg value="build"/>
-                            <arg value="-Ddist.dir=${basedir}/${temp.dir}/builds"/>
-                            <arg value="-Djar.filename=web3-rev1.jar"/>
+                            <arg value="build" />
+                            <arg value="-Ddist.dir=${basedir}/${temp.dir}/builds" />
+                            <arg value="-Djar.filename=web3-rev1.jar" />
                         </exec>
                     </then>
                 </if>
                 <if>
                     <not>
-                        <equals arg1="${commit2}" arg2=""/>
+                        <equals arg1="${commit2}" arg2="" />
                     </not>
                     <then>
-                        <mkdir dir="${temp.dir}/revision2"/>
+                        <mkdir dir="${temp.dir}/revision2" />
                         <exec executable="git">
-                            <arg value="clone"/>
-                            <arg value="--depth"/>
-                            <arg value="1"/>
-                            <arg value="."/>
-                            <arg value="${temp.dir}/revision2"/>
+                            <arg value="clone" />
+                            <arg value="--depth" />
+                            <arg value="1" />
+                            <arg value="." />
+                            <arg value="${temp.dir}/revision2" />
                         </exec>
                         <exec executable="git" dir="${temp.dir}/revision2" failonerror="false">
-                            <arg value="checkout"/>
-                            <arg value="${commit2}"/>
+                            <arg value="checkout" />
+                            <arg value="${commit2}" />
                         </exec>
                         <exec executable="ant" dir="${temp.dir}/revision2" failonerror="false">
-                            <arg value="build"/>
-                            <arg value="-Ddist.dir=${basedir}/${temp.dir}/builds"/>
-                            <arg value="-Djar.filename=web3-rev2.jar"/>
+                            <arg value="build" />
+                            <arg value="-Ddist.dir=${basedir}/${temp.dir}/builds" />
+                            <arg value="-Djar.filename=web3-rev2.jar" />
                         </exec>
                     </then>
                 </if>
                 <copy todir="${temp.dir}/builds" failonerror="false">
-                    <fileset dir="${dist.dir}" includes="*.jar"/>
+                    <fileset dir="${dist.dir}" includes="*.jar" />
                 </copy>
-                <zip 
+                <zip
                     destfile="${git.archive.path}"
                     basedir="${temp.dir}/builds">
-                    <include name="**/*"/>
+                    <include name="**/*" />
                 </zip>
             </then>
             <else>
