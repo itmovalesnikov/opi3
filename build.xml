@@ -133,6 +133,7 @@
             <arg value="--pretty=format:%H" />
         </exec>
 
+        <delete dir="${temp.dir}/${commit1}" failonerror="false" />
         <exec executable="git" failifexecutionfails="true">
             <arg value="worktree" />
             <arg value="add" />
@@ -157,6 +158,7 @@
             <arg value="--pretty=format:%H" />
         </exec>
 
+        <delete dir="${temp.dir}/${commit2}" failonerror="false" />
         <exec executable="git" failifexecutionfails="true">
             <arg value="worktree" />
             <arg value="add" />
@@ -170,7 +172,7 @@
         <ant dir="${temp.dir}/${commit2}" target="build" />
         <copy file="${temp.dir}/${commit2}/${war.path}"
             tofile="${temp.dir}/${project.name}-${commit2}.war" />
-        <delete dir="${temp.dir}/${commit1}" />
+        <delete dir="${temp.dir}/${commit2}" />
 
         <zip destfile="web3-team.zip" basedir="${temp.dir}" />
 
